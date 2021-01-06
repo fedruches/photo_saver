@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Boost 1.71.0 COMPONENTS program_options REQUIRED)
 
-add_executable(${PROJECT_NAME} main.cpp)
+file(GLOB SOURCE_FILES *.cpp curl_wrapper/*.cpp)
+
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} curl pthread ${Boost_LIBRARIES})
