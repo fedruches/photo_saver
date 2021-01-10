@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::string remoteUrl = "sftp://fedor:qjkgaF1993@192.168.1.234:22/~/"/* + vm["dst"].as<std::string>()*/;
+    std::string remoteUrl = "sftp://user:pass@ip:22/~/"/* + vm["dst"].as<std::string>()*/;
 
     /* get a FILE * of the same file */
     auto hdSrc = fopen(vm["src"].as<std::string>().c_str(), "rb");
