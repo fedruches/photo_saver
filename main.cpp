@@ -37,8 +37,8 @@ int main(int argc, char *argv[])
     bpo::options_description desc{"Options"};
     desc.add_options()
             ("help,h", "Help screen")
-            ("src", bpo::value<std::string>()->default_value("/home/fedor/Pictures/Untitled.png"), "Src")
-            ("dst", bpo::value<std::string>()->default_value("picture.png"), "Dst");
+            ("src", bpo::value<std::string>()->default_value("/home/fedor/Pictures/mac-rebisz-stalker-004-1920.jpg"), "src")
+            ("dst", bpo::value<std::string>()->default_value("picture_mac.jpg"), "dst");
 
     bpo::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -49,13 +49,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::string remoteUrl = "sftp://fedor:user@192.168.1.237:22/~/SERVER/" + vm["dst"].as<std::string>();
+    std::string remoteUrl = "sftp://fedor:qjkgaF1993@192.168.1.234:22/~/"/* + vm["dst"].as<std::string>()*/;
 
     /* get a FILE * of the same file */
     auto hdSrc = fopen(vm["src"].as<std::string>().c_str(), "rb");
 
     curl_wrapper::Curl curl(std::move(remoteUrl), hdSrc);
-    curl.PrepareToFileTransfer(vm["src"].as<std::string>());
+    //curl.PrepareToFileTransfer(vm["src"].as<std::string>());
+
+    curl.GetFileListing();
 
     struct curl_slist *headerlist = nullptr;
 
@@ -66,8 +68,12 @@ int main(int argc, char *argv[])
     /* Now run off and do what you've been told! */
     curl.Perform();
 
+    auto str = curl.GetDirList();
+
     /* clean up the FTP commands list */
     curl_slist_free_all(headerlist);
+
+    std::cout << str << std::endl;
 
     return 0;
 }

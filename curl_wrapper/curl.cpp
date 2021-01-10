@@ -19,6 +19,8 @@ Curl::Curl(std::string remoteUrl, FILE *sourceFileHandler) : remoteUrl_{std::mov
 Curl::~Curl() {
     curl_global_cleanup();
     fclose(sourceFileHandler_);
+    std::filesystem::remove(tmpDirListFileName_);
+
     curl_global_cleanup();
 }
 
@@ -65,6 +67,31 @@ void Curl::Perform() {
 
         throw std::runtime_error("curl_easy_perform() failed: ");
     }
+}
+
+std::string Curl::GetFileListing() {
+    tmpFileForDirList_ = fopen(tmpDirListFileName_.c_str(), "wb");
+
+    curl_easy_setopt(curl_, CURLOPT_URL, remoteUrl_.c_str());
+    curl_easy_setopt(curl_, CURLOPT_WRITEDATA, tmpFileForDirList_);
+    curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, write_callback);
+    curl_easy_setopt(curl_, CURLOPT_DIRLISTONLY, 1);
+
+    return std::string();
+}
+
+std::string Curl::GetDirList() {
+    if(std::filesystem::exists(tmpDirListFileName_))
+    {
+        fclose(tmpFileForDirList_);
+        std::ifstream ifs(tmpDirListFileName_);
+        std::string content( (std::istreambuf_iterator<char>(ifs) ),
+                             (std::istreambuf_iterator<char>()));
+
+        return content;
+    }
+
+    return std::string();
 }
 
 }
