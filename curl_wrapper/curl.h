@@ -19,12 +19,6 @@ namespace curl_wrapper {
 
 class Curl {
 public:
-    struct MemoryStruct {
-        char *memory;
-        size_t size;
-    };
-
-public:
     explicit Curl(std::string remoteUrl, FILE *sourceFileHandler);
 
     ~Curl();
@@ -40,8 +34,6 @@ public:
     std::string GetDirList();
 
     std::string GetResult();
-
-    MemoryStruct memoryStruct_;
 
 private:
     CURL *curl_;
@@ -61,21 +53,11 @@ private:
 
 static size_t write_callback(void* data, size_t size, size_t nmemb, void* ptr)
 {
-    size_t realsize = size * nmemb;
-    auto *mem = (curl_wrapper::Curl::MemoryStruct *)ptr;
+    size_t fullSize = size * nmemb;
+    auto *mem = (std::string *)ptr;
+    *mem += std::string(static_cast<char *>(data));
 
-    char *newPtr = static_cast<char *>(realloc(mem->memory, mem->size + realsize + 1));
-    if(newPtr == nullptr) {
-        printf("not enough memory (realloc returned NULL)\n");
-        return 0;
-    }
-
-    mem->memory = newPtr;
-    memcpy(&(mem->memory[mem->size]), data, realsize);
-    mem->size += realsize;
-    mem->memory[mem->size] = 0;
-
-    return realsize;
+    return fullSize;
 }
 
 static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *stream)

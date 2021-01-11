@@ -9,9 +9,6 @@ namespace curl_wrapper {
 
 Curl::Curl(std::string remoteUrl, FILE *sourceFileHandler) : remoteUrl_{std::move(remoteUrl)},
                                                              sourceFileHandler_{sourceFileHandler} {
-    memoryStruct_.memory = static_cast<char *>(malloc(1));
-    memoryStruct_.size = 0;
-
     curl_global_init(CURL_GLOBAL_ALL);
     curl_ = curl_easy_init();
 
@@ -25,8 +22,6 @@ Curl::~Curl() {
     std::filesystem::remove(tmpDirListFileName_);
 
     curl_global_cleanup();
-
-    free(memoryStruct_.memory);
 }
 
 void Curl::PrepareToFileTransfer(std::string sourceFileName) {
@@ -78,7 +73,7 @@ std::string Curl::GetFileListing() {
     tmpFileForDirList_;// = fopen(tmpDirListFileName_.c_str(), "wb");
 
     curl_easy_setopt(curl_, CURLOPT_URL, remoteUrl_.c_str());
-    curl_easy_setopt(curl_, CURLOPT_WRITEDATA, (void *)&memoryStruct_);
+    curl_easy_setopt(curl_, CURLOPT_WRITEDATA, (void *)&result_);
     curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, write_callback);
     //curl_easy_setopt(curl_, CURLOPT_DIRLISTONLY, 1);
 
@@ -100,7 +95,7 @@ std::string Curl::GetDirList() {
 }
 
 std::string Curl::GetResult() {
-    return std::string(memoryStruct_.memory);
+    return result_;
 }
 
 }
