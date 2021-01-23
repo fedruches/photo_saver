@@ -2,9 +2,6 @@
 #include <iostream>
 
 #include <curl/curl.h>
-#include <curlcpp/curl_easy.h>
-#include <curlcpp/curl_ios.h>
-
 #include "curl_wrapper/curl.h"
 
 #include <fstream>
@@ -15,7 +12,6 @@ namespace bpo = boost::program_options;
 #include <cstdio>
 #include <cstring>
 
-#include <curl/curl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -26,11 +22,6 @@ namespace bpo = boost::program_options;
 #include <unistd.h>
 #endif
 
-/* <DESC>
- * Performs an FTP upload and renames the file just after a successful
- * transfer.
- * </DESC>
- */
 
 int main(int argc, char *argv[])
 {
@@ -52,31 +43,45 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-    std::string remoteUrl = "sftp://user:pass@ip:22/~/"/* + vm["dst"].as<std::string>()*/;
-
         /* get a FILE * of the same file */
-        auto hdSrc = fopen(vm["src"].as<std::string>().c_str(), "rb");
-
-        curl_wrapper::Curl curl(std::move(remoteUrl), hdSrc);
-        //curl.PrepareToFileTransfer(vm["src"].as<std::string>());
-
-        curl.GetFileListing();
+        auto hdSrc1 = fopen(vm["src"].as<std::string>().c_str(), "rb");
+        auto hdSrc2 = fopen(vm["src"].as<std::string>().c_str(), "rb");
 
         struct curl_slist *headerlist = nullptr;
-
         static const char buf[] = "rename SERVER/picture.png SERVER/renamed-and-fine.png";
 
         headerlist = curl_slist_append(headerlist, buf);
 
-        /* Now run off and do what you've been told! */
-        curl.Perform();
+        std::string remoteUrl = "sftp://user:pass@x.x.x.x:22/~/"/* + vm["dst"].as<std::string>()*/;
+        {
+            curl_wrapper::Curl curl(remoteUrl, hdSrc1);
+            //curl.PrepareToFileTransfer(vm["src"].as<std::string>());
 
-        auto str = curl.GetResult();
+            curl.ChangeUrl(remoteUrl);
+            curl.GetFileListing();
 
-        /* clean up the FTP commands list */
+            /* Now run off and do what you've been told! */
+            curl.Perform();
+
+            auto str = curl.GetResult();
+
+            std::cout << str << std::endl;
+
+            std::string remoteDirName;
+            std::cout << "Enter a directory name what you want to move" << std::endl;
+            std::cin >> remoteDirName;
+
+            remoteDirName = remoteUrl + remoteDirName;
+            curl.ChangeUrl(remoteDirName);
+
+            curl.GetFileListing();
+            curl.ClearResult();
+            curl.Perform();
+            auto str2 = curl.GetResult();
+            std::cout << str2 << std::endl;
+        }
+
         curl_slist_free_all(headerlist);
-
-        std::cout << str << std::endl;
 
         return 0;
     }

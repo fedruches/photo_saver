@@ -31,9 +31,11 @@ public:
 
     void Perform();
 
-    std::string GetDirList();
-
     std::string GetResult();
+
+    void ChangeUrl(const std::string &url);
+
+    void ClearResult();
 
 private:
     CURL *curl_;
@@ -44,7 +46,6 @@ private:
     FILE *sourceFileHandler_;
 
     std::string tmpDirListFileName_ = "dir_list.tmp";
-    FILE *tmpFileForDirList_;
 
     std::string result_;
 };

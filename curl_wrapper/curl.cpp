@@ -70,32 +70,25 @@ void Curl::Perform() {
 }
 
 std::string Curl::GetFileListing() {
-    tmpFileForDirList_;// = fopen(tmpDirListFileName_.c_str(), "wb");
-
-    curl_easy_setopt(curl_, CURLOPT_URL, remoteUrl_.c_str());
+    curl_easy_setopt(curl_, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_easy_setopt(curl_, CURLOPT_SSL_VERIFYSTATUS, 0);
     curl_easy_setopt(curl_, CURLOPT_WRITEDATA, (void *)&result_);
     curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, write_callback);
     //curl_easy_setopt(curl_, CURLOPT_DIRLISTONLY, 1);
 
-    return std::string();
-}
-
-std::string Curl::GetDirList() {
-    if(std::filesystem::exists(tmpDirListFileName_))
-    {
-        fclose(tmpFileForDirList_);
-        std::ifstream ifs(tmpDirListFileName_);
-        std::string content( (std::istreambuf_iterator<char>(ifs) ),
-                             (std::istreambuf_iterator<char>()));
-
-        return content;
-    }
-
-    return std::string();
+    return result_;
 }
 
 std::string Curl::GetResult() {
     return result_;
+}
+
+void Curl::ChangeUrl(const std::string &url) {
+    curl_easy_setopt(curl_, CURLOPT_URL, url.c_str());
+}
+
+void Curl::ClearResult() {
+    result_.clear();
 }
 
 }
